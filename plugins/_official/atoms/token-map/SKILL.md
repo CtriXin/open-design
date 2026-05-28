@@ -25,15 +25,105 @@ mapping". This atom produces that mapping.
 ```text
 project-cwd/
 └── token-map/
-    ├── colors.json     # { source: '#hex' | 'tokenName', target: '--ds-token' }[]
+    ├── colors.json     # { source, target, confidence, evidence[] }[]
     ├── typography.json # font + size + weight pairings
     ├── spacing.json    # spacing scale crosswalk
+    ├── inferred.json   # semantic role hypotheses for anonymous source tokens
     ├── unmatched.json  # { source: ..., reason: 'no-target-equivalent' }[]
     └── meta.json       # { sourceKind: 'figma' | 'code', generatedAt, atomDigest }
 ```
 
 `unmatched.json` is the audit list a human reviews; the agent must
 not invent target tokens silently.
+
+## Semantic token inference
+
+Figma often exports anonymous source names such as `color-3`,
+`paint/17`, or raw `#5B8DEF`. Do not ask the user to rename those
+before mapping. First infer the semantic role from usage evidence:
+
+- Node path, component name, instance overrides, variant/state labels,
+  frame name, layer name, and nearby text such as `Primary`,
+  `Selected`, `Link`, `Error`, `Focus`, `Nav`, `Button`, or `CTA`.
+- CSS-like position in the rendered tree: background fill, foreground
+  text/icon, border, divider, overlay, shadow tint, focus ring, status
+  badge, chart series, or brand/accent treatment.
+- Contrast relationships: a color paired repeatedly with the main
+  canvas is likely foreground; one paired with foreground inside CTA
+  components is likely primary/accent background; a thin outline around
+  interactive elements is likely border or focus-ring.
+- Reuse topology: a value that appears across primary buttons,
+  selected tabs, and active nav items is stronger evidence for
+  `--ds-color-primary` than a value that appears once in an illustration.
+
+Write these hypotheses to `token-map/inferred.json` before final
+mapping:
+
+```jsonc
+[
+  {
+    "source": "color-3",
+    "value": "#5B8DEF",
+    "role": "primary",
+    "targetCandidates": ["--ds-color-primary", "--ds-color-link"],
+    "confidence": 0.78,
+    "evidence": [
+      "Button/Primary fill",
+      "Selected tab indicator",
+      "Link text in Settings frame"
+    ]
+  }
+]
+```
+
+Then map to the highest-confidence active design-system token only
+when the evidence is role-based, not value-only. If confidence is
+below `0.6`, if the top two candidates are too close to call, or if
+the evidence points to conflicting roles (`primary` vs `link` vs
+`focus-ring`), put the source token in `unmatched.json` with reason
+`ambiguous-semantic-role` and include the competing candidates. This
+keeps automation useful for the common 70%-80% case while preserving
+human review for ambiguous brand decisions.
+
+### Before / after expectation
+
+Without semantic inference, an anonymous Figma token can only produce
+an uncertain value-level mapping:
+
+```jsonc
+{
+  "source": "color-3",
+  "value": "#5B8DEF",
+  "target": null,
+  "reason": "anonymous-source-token"
+}
+```
+
+With semantic inference, the same token should carry role evidence
+before it is accepted:
+
+```jsonc
+{
+  "source": "color-3",
+  "value": "#5B8DEF",
+  "target": "--ds-color-primary",
+  "confidence": 0.78,
+  "evidence": [
+    "Button/Primary fill",
+    "Selected tab indicator",
+    "Active nav item"
+  ]
+}
+```
+
+This prompt-only v1 atom does not claim a measured accuracy lift by
+itself. Treat the expected improvement as coverage of previously
+manual anonymous-token cases when the Figma tree contains enough role
+evidence. Real accuracy numbers require a fixture suite with known
+source tokens, expected semantic roles, and a before/after agent run.
+See `examples/semantic-inference-before-after.json` for a deterministic
+same-token-batch simulation that compares the old value-level output
+with the semantic inference output.
 
 ## Convergence
 

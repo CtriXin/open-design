@@ -1,0 +1,137 @@
+{
+  "simulationKind": "deterministic-fixture",
+  "notes": [
+    "This is not a measured production benchmark.",
+    "It simulates the same anonymous Figma token batch under the old value-level prompt and the semantic inference prompt."
+  ],
+  "sourceTokens": [
+    {
+      "source": "color-1",
+      "value": "#FFFFFF",
+      "usage": ["App Shell/Canvas fill", "Card/Default fill", "Modal/Surface fill"]
+    },
+    {
+      "source": "color-2",
+      "value": "#111827",
+      "usage": ["Body text", "Icon/Default foreground", "Table cell text"]
+    },
+    {
+      "source": "color-3",
+      "value": "#5B8DEF",
+      "usage": ["Button/Primary fill", "Selected tab indicator", "Active nav item"]
+    },
+    {
+      "source": "color-4",
+      "value": "#5B8DEF",
+      "usage": ["Link text in Settings frame", "Inline help link", "Docs link"]
+    },
+    {
+      "source": "color-5",
+      "value": "#D0D5DD",
+      "usage": ["Input/Default border", "Divider line", "Table row separator"]
+    },
+    {
+      "source": "paint-17",
+      "value": "#84CAFF",
+      "usage": ["Button/Focus outline", "Input/Focus ring", "Menu item focus halo"]
+    },
+    {
+      "source": "color-6",
+      "value": "#E5484D",
+      "usage": ["Error message text", "Destructive button fill", "Alert/Error icon"]
+    },
+    {
+      "source": "color-7",
+      "value": "#F59E0B",
+      "usage": ["Chart series 2", "Illustration accent", "One-off metric badge"]
+    }
+  ],
+  "targetDesignSystemTokens": [
+    "--ds-color-surface",
+    "--ds-color-fg",
+    "--ds-color-primary",
+    "--ds-color-link",
+    "--ds-color-border",
+    "--ds-color-focus-ring",
+    "--ds-color-danger"
+  ],
+  "beforeRun": {
+    "promptMode": "value-level-token-map",
+    "mapped": [],
+    "unmatched": [
+      { "source": "color-1", "reason": "anonymous-source-token" },
+      { "source": "color-2", "reason": "anonymous-source-token" },
+      { "source": "color-3", "reason": "anonymous-source-token" },
+      { "source": "color-4", "reason": "anonymous-source-token" },
+      { "source": "color-5", "reason": "anonymous-source-token" },
+      { "source": "paint-17", "reason": "anonymous-source-token" },
+      { "source": "color-6", "reason": "anonymous-source-token" },
+      { "source": "color-7", "reason": "anonymous-source-token" }
+    ],
+    "coverage": {
+      "mapped": 0,
+      "total": 8,
+      "ratio": 0
+    }
+  },
+  "afterRun": {
+    "promptMode": "semantic-token-inference",
+    "mapped": [
+      {
+        "source": "color-1",
+        "target": "--ds-color-surface",
+        "confidence": 0.82,
+        "evidence": ["App Shell/Canvas fill", "Card/Default fill", "Modal/Surface fill"]
+      },
+      {
+        "source": "color-2",
+        "target": "--ds-color-fg",
+        "confidence": 0.84,
+        "evidence": ["Body text", "Icon/Default foreground", "Table cell text"]
+      },
+      {
+        "source": "color-3",
+        "target": "--ds-color-primary",
+        "confidence": 0.78,
+        "evidence": ["Button/Primary fill", "Selected tab indicator", "Active nav item"]
+      },
+      {
+        "source": "color-4",
+        "target": "--ds-color-link",
+        "confidence": 0.72,
+        "evidence": ["Link text in Settings frame", "Inline help link", "Docs link"]
+      },
+      {
+        "source": "color-5",
+        "target": "--ds-color-border",
+        "confidence": 0.7,
+        "evidence": ["Input/Default border", "Divider line", "Table row separator"]
+      },
+      {
+        "source": "paint-17",
+        "target": "--ds-color-focus-ring",
+        "confidence": 0.76,
+        "evidence": ["Button/Focus outline", "Input/Focus ring", "Menu item focus halo"]
+      },
+      {
+        "source": "color-6",
+        "target": "--ds-color-danger",
+        "confidence": 0.86,
+        "evidence": ["Error message text", "Destructive button fill", "Alert/Error icon"]
+      }
+    ],
+    "unmatched": [
+      {
+        "source": "color-7",
+        "reason": "ambiguous-semantic-role",
+        "candidates": ["chart-series", "illustration-accent", "warning"],
+        "evidence": ["Chart series 2", "Illustration accent", "One-off metric badge"]
+      }
+    ],
+    "coverage": {
+      "mapped": 7,
+      "total": 8,
+      "ratio": 0.875
+    }
+  }
+}
